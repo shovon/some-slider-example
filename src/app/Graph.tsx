@@ -172,7 +172,12 @@ export function Graph() {
 				}}
 				className="border-y-black border-y-2"
 			>
-				<path d={[...path.value].join(" ")} stroke="blue" fill="transparent" />
+				<path
+					d={[...path.value].join(" ")}
+					stroke="rgb(206, 111, 49)"
+					stroke-width="2"
+					fill="transparent"
+				/>
 				{/* <rect
 					x={-pan}
 					y={50}

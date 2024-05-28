@@ -59,16 +59,6 @@ export function Graph() {
 	const cursorPositionRef = useRef<[number, number]>([0, 0]);
 
 	// It's a logarithmic value, so the zoom factor grows at an exponential rate.
-	// const [zoom, setZoom] = useStateProcessor(0, (value) => Math.max(-3, value));
-	// const [realZoom, setRealZoom] = useStateProcessor(0, (value) => value);
-	// const [realPan, setRealPan] = useStateProcessor(
-	// 	0,
-	// 	(value) => {
-	// 		// return Math.min(Math.E ** zoom * 500, Math.max(0, value));
-	// 		return Math.max(0, value);
-	// 	}
-	// 	// value
-	// );
 	const [{ pan: realPan, zoom: realZoom }, setCamera] =
 		useStateProcessor<Camera>(
 			{
@@ -76,10 +66,15 @@ export function Graph() {
 				zoom: 0,
 			},
 			(value): Camera => {
+				const minZoom = Math.log(divContainerWidth / maxVirtualRange);
+				// virtualPan + divContainerWidth / Math.E ** virtualZoom < maxVirtualRange
+				const maxPan =
+					maxVirtualRange * Math.E ** (value.zoom + zoomAddend) -
+					divContainerWidth;
+
 				return {
-					pan: Math.max(0, value.pan),
-					zoom: value.zoom,
-					// zoom: divContainerWidth / Math.E ** virtualZoom,
+					pan: Math.max(0, Math.min(maxPan, Math.max(0, value.pan))),
+					zoom: Math.max(minZoom - zoomAddend, value.zoom),
 				};
 			}
 		);
@@ -198,7 +193,7 @@ export function Graph() {
 				<path
 					d={[...path.value].join(" ")}
 					stroke="rgb(206, 111, 49)"
-					stroke-width="2"
+					strokeWidth="2"
 					fill="transparent"
 				/>
 				{/* <rect

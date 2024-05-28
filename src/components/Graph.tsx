@@ -5,9 +5,6 @@ import { useResizeObserver } from "../lib/resize";
 import { useStateConstraint } from "../app/useStateConstraint";
 import { useStateProcessor } from "../app/useStateProcessor";
 
-const amplitude = 1;
-const sampleRate = 50;
-
 function* map<T, V>(
 	iterable: Iterable<T>,
 	f: (v: T, index: number) => V
@@ -27,28 +24,6 @@ const modulo = (a: number, m: number) => ((a % m) + m) % m;
 // Straight up stolen from here https://stackoverflow.com/a/14415822/538570
 const wrap = (x: number, min: number, max: number): number =>
 	min > max ? wrap(x, max, min) : modulo(x - min, max - min) + min;
-
-// function* slice<T>(
-// 	iterable: Iterable<T>,
-// 	start: number,
-// 	end: number
-// ): Iterable<T> {
-// 	start = Math.max(0, start);
-// 	end = Math.max(0, end);
-
-// 	if (start > end) {
-// 		yield* slice(iterable, end, start);
-// 		return;
-// 	}
-
-// 	for (let i = 0; i < end; i++) {
-// 		if (i < start) continue;
-// 		for (const el of iterable) {
-// 			yield el;
-// 			i++;
-// 		}
-// 	}
-// }
 
 type Pipe<T> = {
 	_<V>(fn: (value: T) => V): Pipe<V>;
@@ -92,13 +67,8 @@ export function Graph() {
 	const virtualPan = realPan / Math.E ** virtualZoom;
 
 	const height = 200;
-	const phase = 0;
-	const frequency = 0.006125126125;
 
 	const widthSampleDivisor = 10;
-
-	// const spread = 128 * 4;
-	const spread = 128 * 4;
 
 	// Bunch of samples in virtual space.
 	const samples = Array.from({
@@ -137,12 +107,14 @@ export function Graph() {
 		Math.ceil(divContainerWidth / modularZoomSegmentWidth) * 2 + 10;
 
 	return (
-		<main ref={divContainerRef}>
+		<div ref={divContainerRef}>
 			<p>
 				Camera zoom: e<sup>{virtualZoom}</sup> = {Math.E ** virtualZoom}
 			</p>
 			<p>Pan: {realPan}</p>
 			<p>Simulated pan: {virtualPan}</p>
+			<p>Container width: {divContainerWidth}</p>
+			<p>Virtual end: {divContainerWidth / Math.E ** virtualZoom}</p>
 			<svg
 				ref={(ref) => {
 					ref?.addEventListener(
@@ -222,6 +194,6 @@ export function Graph() {
 					fill="transparent"
 				/>
 			</svg> */}
-		</main>
+		</div>
 	);
 }

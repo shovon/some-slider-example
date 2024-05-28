@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useResizeObserver } from "../lib/resize";
-import { useStateConstraint } from "../app/useStateConstraint";
-import { useStateProcessor } from "../app/useStateProcessor";
+import { useResizeObserver } from "../../lib/resize";
+import { useStateConstraint } from "../../app/useStateConstraint";
+import { useStateProcessor } from "../../app/useStateProcessor";
+import { Slider } from "./Slider";
 
 function* map<T, V>(
 	iterable: Iterable<T>,
@@ -48,98 +49,6 @@ type Camera = {
 	zoom: number;
 	pan: number;
 };
-
-type SliderProps = {
-	left: number;
-	right: number;
-	onCenterSlide?: (props: { amount: number; sliderWidth: number }) => void;
-	onRightSlide?: (amount: number) => void;
-};
-
-function Slider({ left, right, onCenterSlide, onRightSlide }: SliderProps) {
-	const {
-		width: divContainerWidth,
-		// height: divContainerHeight,
-		ref: divContainerRef,
-	} = useResizeObserver();
-	const isMouseDownOnCenterRef = useRef(false);
-	const isMouseDownOnRightRef = useRef(false);
-
-	useEffect(() => {
-		const listener = (e: MouseEvent) => {
-			if (isMouseDownOnCenterRef.current) {
-				e.preventDefault();
-				onCenterSlide?.({
-					amount: e.movementX,
-					sliderWidth: divContainerWidth,
-				});
-			}
-			if (isMouseDownOnRightRef.current) {
-				e.preventDefault();
-				onRightSlide?.(e.movementX);
-			}
-		};
-		document.addEventListener("mousemove", listener);
-		return () => {
-			document.removeEventListener("mousemove", listener);
-		};
-	}, [onCenterSlide, divContainerWidth, onRightSlide]);
-
-	useEffect(() => {
-		const listener = () => {
-			isMouseDownOnCenterRef.current = false;
-			isMouseDownOnRightRef.current = false;
-		};
-		document.addEventListener("mouseup", listener);
-		return () => {
-			document.removeEventListener("mouseup", listener);
-		};
-	}, []);
-
-	return (
-		<div
-			ref={divContainerRef}
-			className="w-full h-[12px] bg-neutral-400 mt-4 relative"
-		>
-			{/* The white background indicating selection range */}
-			<div
-				className="cursor-grab absolute top-0 left-0 h-[12px] bg-neutral-100"
-				onMouseDown={() => {
-					isMouseDownOnCenterRef.current = true;
-				}}
-				onMouseUp={() => {
-					isMouseDownOnCenterRef.current = false;
-				}}
-				style={{
-					left: left * divContainerWidth,
-					width: right * divContainerWidth,
-				}}
-			></div>
-
-			{/* The left knob */}
-			<div
-				className="cursor-pointer absolute left-0 top-[-2px] h-[16px] w-2 bg-[#1c4756]"
-				style={{
-					left: left * divContainerWidth,
-				}}
-			></div>
-
-			{/* The right knob */}
-			<div
-				className="cursor-pointer absolute left-0 top-[-2px] h-[16px] w-2 bg-[#1c4756]"
-				style={{
-					left: (left + right) * divContainerWidth,
-				}}
-				onMouseDown={() => {
-					isMouseDownOnRightRef.current = true;
-				}}
-				onMouseUp={() => {
-					isMouseDownOnRightRef.current = false;
-				}}
-			></div>
-		</div>
-	);
-}
 
 export function Graph() {
 	const {
@@ -316,12 +225,19 @@ export function Graph() {
 			<Slider
 				left={virtualPan / maxVirtualRange}
 				right={divContainerWidth / Math.E ** virtualZoom / maxVirtualRange}
-				onCenterSlide={({ amount }) => {
+				// TODO: useCallback
+				onCenterSlide={({ amount, segmentWidth, sliderWidth }) => {
+					// We know the amount.
+					//
+					// Next grab the entire width of the slider.
+					console.assert(segmentWidth < sliderWidth);
+
 					setCamera({
-						pan: realPan + amount * 8 * Math.E ** realZoom,
+						pan: realPan + amount,
 						zoom: realZoom,
 					});
 				}}
+				// TODO: useCallback
 				onRightSlide={(amount) => {
 					setCamera({
 						pan: realPan,

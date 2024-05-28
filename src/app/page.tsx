@@ -1,6 +1,6 @@
 "use client";
 
-import { Graph } from "../components/Graph";
+import { Graph } from "../components/Graph/Graph";
 
 export default function Home() {
 	return (

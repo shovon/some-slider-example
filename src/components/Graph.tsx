@@ -220,18 +220,22 @@ export function Graph() {
 					);
 				})}
 			</svg>
-			{/* <svg width="400" height="400" xmlns="http://www.w3.org/2000/svg">
-				<path
-					d="
-    M 50 50
-    Q 100 0 150 50
-    Q 200 100 250 50
-    Q 300 0 350 50
-    "
-					stroke="black"
-					fill="transparent"
-				/>
-			</svg> */}
+
+			<div className="w-full h-[12px] bg-neutral-400 mt-4 relative">
+				{/* The white background indicating selection range */}
+				<div
+					className="cursor-grab absolute top-0 left-0 h-[12px] bg-white"
+					style={{
+						width: 100,
+					}}
+				></div>
+
+				{/* The left knob */}
+				<div className="cursor-pointer absolute left-0 top-[-2px] h-[16px] w-2 bg-[#1c4756]"></div>
+
+				{/* The right knob */}
+				<div className="cursor-pointer absolute left-0 top-[-2px] h-[16px] w-2 bg-[#1c4756]"></div>
+			</div>
 		</div>
 	);
 }

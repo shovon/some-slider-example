@@ -42,6 +42,12 @@ function start<T>(initial: T): Pipe<T> {
 // The segment width, when no zooming is involved.
 const segmentWidth = 100;
 const zoomAddend = 5;
+const maxVirtualRange = 80;
+
+type Camera = {
+	zoom: number;
+	pan: number;
+};
 
 export function Graph() {
 	const {
@@ -54,15 +60,29 @@ export function Graph() {
 
 	// It's a logarithmic value, so the zoom factor grows at an exponential rate.
 	// const [zoom, setZoom] = useStateProcessor(0, (value) => Math.max(-3, value));
-	const [realZoom, setRealZoom] = useStateProcessor(0, (value) => value);
-	const [realPan, setRealPan] = useStateProcessor(
-		0,
-		(value) => {
-			// return Math.min(Math.E ** zoom * 500, Math.max(0, value));
-			return value;
-		}
-		// value
-	);
+	// const [realZoom, setRealZoom] = useStateProcessor(0, (value) => value);
+	// const [realPan, setRealPan] = useStateProcessor(
+	// 	0,
+	// 	(value) => {
+	// 		// return Math.min(Math.E ** zoom * 500, Math.max(0, value));
+	// 		return Math.max(0, value);
+	// 	}
+	// 	// value
+	// );
+	const [{ pan: realPan, zoom: realZoom }, setCamera] =
+		useStateProcessor<Camera>(
+			{
+				pan: 0,
+				zoom: 0,
+			},
+			(value): Camera => {
+				return {
+					pan: Math.max(0, value.pan),
+					zoom: value.zoom,
+					// zoom: divContainerWidth / Math.E ** virtualZoom,
+				};
+			}
+		);
 	const virtualZoom = realZoom + zoomAddend;
 	const virtualPan = realPan / Math.E ** virtualZoom;
 
@@ -77,7 +97,7 @@ export function Graph() {
 		const x = i * widthSampleDivisor;
 		return [
 			x,
-			(Math.sin((x + realPan) / Math.E ** virtualZoom) * height) / 2,
+			((Math.sin((x + realPan) / Math.E ** virtualZoom) * height) / 2) * 0.8,
 			// Math.sin(((x + pan) * (frequency * 1) + 0) / Math.E ** virtualZoom) * (20 * 1) +
 			// 	Math.sin(((x + pan) * (frequency * 2) + 1) / Math.E ** virtualZoom) *
 			// 		(20 * 0.5) +
@@ -115,6 +135,21 @@ export function Graph() {
 			<p>Simulated pan: {virtualPan}</p>
 			<p>Container width: {divContainerWidth}</p>
 			<p>Virtual end: {divContainerWidth / Math.E ** virtualZoom}</p>
+			<p>
+				Viewport range: {"["}
+				{virtualPan}, {virtualPan + divContainerWidth / Math.E ** virtualZoom}
+				{"]"}
+			</p>
+			<p>
+				Allowed range: {"["}
+				0, {maxVirtualRange}
+				{"]"}. Is viewport outside range?{" "}
+				{divContainerWidth / Math.E ** virtualZoom > maxVirtualRange ||
+				virtualPan < 0 ||
+				virtualPan + divContainerWidth / Math.E ** virtualZoom > maxVirtualRange
+					? "Yes"
+					: "No"}
+			</p>
 			<svg
 				ref={(ref) => {
 					ref?.addEventListener(
@@ -130,10 +165,18 @@ export function Graph() {
 
 								const m = cursorPositionRef.current[0];
 
-								setRealPan(((m + c1) / z1) * z2 - m);
-								setRealZoom(newZoom);
+								// setRealPan(();
+								// setRealZoom(newZoom);
+								setCamera({
+									pan: ((m + c1) / z1) * z2 - m,
+									zoom: newZoom,
+								});
 							} else {
-								setRealPan(realPan + e.deltaX * 0.5);
+								// setRealPan(realPan + e.deltaX * 0.5);
+								setCamera({
+									pan: realPan + e.deltaX * 0.5,
+									zoom: realZoom,
+								});
 							}
 						},
 						{ passive: false }

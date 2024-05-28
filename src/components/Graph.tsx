@@ -66,6 +66,7 @@ function start<T>(initial: T): Pipe<T> {
 
 // The segment width, when no zooming is involved.
 const segmentWidth = 100;
+const zoomAddend = 5;
 
 export function Graph() {
 	const {
@@ -77,20 +78,24 @@ export function Graph() {
 	const cursorPositionRef = useRef<[number, number]>([0, 0]);
 
 	// It's a logarithmic value, so the zoom factor grows at an exponential rate.
-	const [zoom, setZoom] = useStateProcessor(0, (value) => Math.max(-3, value));
-	const [pan, setPan] = useStateProcessor(
+	// const [zoom, setZoom] = useStateProcessor(0, (value) => Math.max(-3, value));
+	const [realZoom, setRealZoom] = useStateProcessor(0, (value) => value);
+	const [realPan, setRealPan] = useStateProcessor(
 		0,
 		(value) => {
-			return Math.min(Math.E ** zoom * 500, Math.max(0, value));
+			// return Math.min(Math.E ** zoom * 500, Math.max(0, value));
+			return value;
 		}
 		// value
 	);
+	const virtualZoom = realZoom + zoomAddend;
+	const virtualPan = realPan / Math.E ** virtualZoom;
 
 	const height = 200;
 	const phase = 0;
 	const frequency = 0.006125126125;
 
-	const widthSampleDivisor = 30;
+	const widthSampleDivisor = 10;
 
 	// const spread = 128 * 4;
 	const spread = 128 * 4;
@@ -102,13 +107,14 @@ export function Graph() {
 		const x = i * widthSampleDivisor;
 		return [
 			x,
-			Math.sin(((x + pan) * (frequency * 1) + 0) / Math.E ** zoom) * (20 * 1) +
-				Math.sin(((x + pan) * (frequency * 2) + 1) / Math.E ** zoom) *
-					(20 * 0.5) +
-				Math.sin(((x + pan) * (frequency * 3) + 2) / Math.E ** zoom) *
-					(20 * 0.25) +
-				Math.E ** ((x + pan) / Math.E ** zoom / spread) +
-				50,
+			(Math.sin((x + realPan) / Math.E ** virtualZoom) * height) / 2,
+			// Math.sin(((x + pan) * (frequency * 1) + 0) / Math.E ** virtualZoom) * (20 * 1) +
+			// 	Math.sin(((x + pan) * (frequency * 2) + 1) / Math.E ** virtualZoom) *
+			// 		(20 * 0.5) +
+			// 	Math.sin(((x + pan) * (frequency * 3) + 2) / Math.E ** virtualZoom) *
+			// 		(20 * 0.25) +
+			// 	Math.E ** ((x + pan) / Math.E ** virtualZoom / spread) +
+			// 	50,
 		];
 	});
 
@@ -117,7 +123,7 @@ export function Graph() {
 		// ._((s) => slice(s, 0, samples.length - 1))
 		._((s) =>
 			map(s, ([x, yVirtual], i) => {
-				const y = -yVirtual + height;
+				const y = -yVirtual + height / 2;
 
 				if (i === 0) return `M${x} ${y}`;
 				return `L${x} ${y}`;
@@ -125,15 +131,18 @@ export function Graph() {
 		);
 
 	const modularZoomSegmentWidth =
-		segmentWidth * Math.E ** wrap(zoom, -0.25, 0.25);
-	const tickCount = Math.ceil(divContainerWidth / modularZoomSegmentWidth) * 2;
+		segmentWidth * Math.E ** wrap(virtualZoom, -0.25, 0.25);
+
+	const tickCount =
+		Math.ceil(divContainerWidth / modularZoomSegmentWidth) * 2 + 10;
 
 	return (
 		<main ref={divContainerRef}>
 			<p>
-				Camera zoom: e<sup>{zoom}</sup> = {Math.E ** zoom}
+				Camera zoom: e<sup>{virtualZoom}</sup> = {Math.E ** virtualZoom}
 			</p>
-			<p>Camera pan: {pan}</p>
+			<p>Pan: {realPan}</p>
+			<p>Simulated pan: {virtualPan}</p>
 			<svg
 				ref={(ref) => {
 					ref?.addEventListener(
@@ -141,18 +150,18 @@ export function Graph() {
 						(e) => {
 							e.preventDefault();
 							if (e.ctrlKey) {
-								const c1 = pan;
-								const newZoom = zoom + -e.deltaY * 0.01;
+								const c1 = realPan;
+								const newZoom = realZoom + -e.deltaY * 0.01;
 
-								const z1 = Math.E ** zoom;
-								const z2 = Math.E ** newZoom;
+								const z1 = Math.E ** virtualZoom;
+								const z2 = Math.E ** (newZoom + zoomAddend);
 
 								const m = cursorPositionRef.current[0];
 
-								setPan(((m + c1) / z1) * z2 - m);
-								setZoom(newZoom);
+								setRealPan(((m + c1) / z1) * z2 - m);
+								setRealZoom(newZoom);
 							} else {
-								setPan(pan + e.deltaX * 0.5);
+								setRealPan(realPan + e.deltaX * 0.5);
 							}
 						},
 						{ passive: false }
@@ -180,7 +189,7 @@ export function Graph() {
 				{/* <rect
 					x={-pan}
 					y={50}
-					width={350 * Math.E ** zoom}
+					width={350 * Math.E ** virtualZoom}
 					height={200}
 					style={{ background: "black" }}
 				/> */}
@@ -190,12 +199,12 @@ export function Graph() {
 				}).map((_, i) => {
 					const x =
 						(i - Math.floor(tickCount / 2)) * modularZoomSegmentWidth -
-						wrap(pan, -modularZoomSegmentWidth, modularZoomSegmentWidth);
+						wrap(realPan, -modularZoomSegmentWidth, modularZoomSegmentWidth);
 					return (
 						<g key={i}>
 							<path d={`M${x} 0 V ${height}`} stroke={"rgba(0, 0, 0, 0.125)"} />
 							<text fill="rgba(0, 0, 0, 0.5)" x={x + 5} y={height - 10}>
-								Hello
+								{((realPan + x) / Math.E ** virtualZoom).toFixed(2)}
 							</text>
 						</g>
 					);

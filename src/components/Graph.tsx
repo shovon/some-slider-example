@@ -49,6 +49,51 @@ type Camera = {
 	pan: number;
 };
 
+type SliderProps = {
+	left: number;
+	right: number;
+};
+
+function Slider({ left, right }: SliderProps) {
+	const {
+		width: divContainerWidth,
+		// height: divContainerHeight,
+		ref: divContainerRef,
+	} = useResizeObserver();
+
+	return (
+		<div
+			ref={divContainerRef}
+			className="w-full h-[12px] bg-neutral-400 mt-4 relative"
+		>
+			{/* The white background indicating selection range */}
+			<div
+				className="cursor-grab absolute top-0 left-0 h-[12px] bg-neutral-100"
+				style={{
+					left: left * divContainerWidth,
+					width: right * divContainerWidth,
+				}}
+			></div>
+
+			{/* The left knob */}
+			<div
+				className="cursor-pointer absolute left-0 top-[-2px] h-[16px] w-2 bg-[#1c4756]"
+				style={{
+					left: left * divContainerWidth,
+				}}
+			></div>
+
+			{/* The right knob */}
+			<div
+				className="cursor-pointer absolute left-0 top-[-2px] h-[16px] w-2 bg-[#1c4756]"
+				style={{
+					left: (left + right) * divContainerWidth,
+				}}
+			></div>
+		</div>
+	);
+}
+
 export function Graph() {
 	const {
 		width: divContainerWidth,
@@ -221,21 +266,10 @@ export function Graph() {
 				})}
 			</svg>
 
-			<div className="w-full h-[12px] bg-neutral-400 mt-4 relative">
-				{/* The white background indicating selection range */}
-				<div
-					className="cursor-grab absolute top-0 left-0 h-[12px] bg-white"
-					style={{
-						width: 100,
-					}}
-				></div>
-
-				{/* The left knob */}
-				<div className="cursor-pointer absolute left-0 top-[-2px] h-[16px] w-2 bg-[#1c4756]"></div>
-
-				{/* The right knob */}
-				<div className="cursor-pointer absolute left-0 top-[-2px] h-[16px] w-2 bg-[#1c4756]"></div>
-			</div>
+			<Slider
+				left={virtualPan / maxVirtualRange}
+				right={divContainerWidth / Math.E ** virtualZoom / maxVirtualRange}
+			/>
 		</div>
 	);
 }

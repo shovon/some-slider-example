@@ -52,14 +52,16 @@ type Camera = {
 type SliderProps = {
 	left: number;
 	right: number;
+	onCenterSlide?: (ratio: number) => {};
 };
 
-function Slider({ left, right }: SliderProps) {
+function Slider({ left, right, onCenterSlide }: SliderProps) {
 	const {
 		width: divContainerWidth,
 		// height: divContainerHeight,
 		ref: divContainerRef,
 	} = useResizeObserver();
+	const isMouseDownRef = useRef(false);
 
 	return (
 		<div
@@ -69,6 +71,15 @@ function Slider({ left, right }: SliderProps) {
 			{/* The white background indicating selection range */}
 			<div
 				className="cursor-grab absolute top-0 left-0 h-[12px] bg-neutral-100"
+				onMouseDown={() => {
+					isMouseDownRef.current = true;
+				}}
+				onMouseUp={() => {
+					isMouseDownRef.current = false;
+				}}
+				onMouseMove={(e) => {
+					onCenterSlide?.(e.movementX);
+				}}
 				style={{
 					left: left * divContainerWidth,
 					width: right * divContainerWidth,

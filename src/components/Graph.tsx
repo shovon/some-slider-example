@@ -2,8 +2,8 @@
 
 import { useRef, useState } from "react";
 import { useResizeObserver } from "../lib/resize";
-import { useStateConstraint } from "./useStateConstraint";
-import { useStateProcessor } from "./useStateProcessor";
+import { useStateConstraint } from "../app/useStateConstraint";
+import { useStateProcessor } from "../app/useStateProcessor";
 
 const amplitude = 1;
 const sampleRate = 50;
@@ -64,9 +64,6 @@ function start<T>(initial: T): Pipe<T> {
 	};
 }
 
-// From 0 to maxRange!
-const maxRange = 500;
-
 // The segment width, when no zooming is involved.
 const segmentWidth = 100;
 
@@ -83,7 +80,9 @@ export function Graph() {
 	const [zoom, setZoom] = useStateProcessor(0, (value) => Math.max(-3, value));
 	const [pan, setPan] = useStateProcessor(
 		0,
-		(value) => Math.min(860, Math.max(0, value))
+		(value) => {
+			return Math.min(Math.E ** zoom * 500, Math.max(0, value));
+		}
 		// value
 	);
 
@@ -91,10 +90,10 @@ export function Graph() {
 	const phase = 0;
 	const frequency = 0.006125126125;
 
-	// In virtual space
-	const domain = (x: number) => (x / sampleRate) * Math.PI;
-
 	const widthSampleDivisor = 30;
+
+	// const spread = 128 * 4;
+	const spread = 128 * 4;
 
 	// Bunch of samples in virtual space.
 	const samples = Array.from({
@@ -108,7 +107,7 @@ export function Graph() {
 					(20 * 0.5) +
 				Math.sin(((x + pan) * (frequency * 3) + 2) / Math.E ** zoom) *
 					(20 * 0.25) +
-				Math.E ** ((0.25 * (x + pan)) / Math.E ** zoom / 128) +
+				Math.E ** ((x + pan) / Math.E ** zoom / spread) +
 				50,
 		];
 	});
@@ -188,16 +187,19 @@ export function Graph() {
 
 				{Array.from({
 					length: tickCount,
-				}).map((_, i) => (
-					<path
-						key={i}
-						d={`M${
-							(i - Math.floor(tickCount / 2)) * modularZoomSegmentWidth -
-							wrap(pan, -modularZoomSegmentWidth, modularZoomSegmentWidth)
-						} 0 V ${height}`}
-						stroke={"rgba(0, 0, 0, 0.125)"}
-					/>
-				))}
+				}).map((_, i) => {
+					const x =
+						(i - Math.floor(tickCount / 2)) * modularZoomSegmentWidth -
+						wrap(pan, -modularZoomSegmentWidth, modularZoomSegmentWidth);
+					return (
+						<g key={i}>
+							<path d={`M${x} 0 V ${height}`} stroke={"rgba(0, 0, 0, 0.125)"} />
+							<text fill="rgba(0, 0, 0, 0.5)" x={x + 5} y={height - 10}>
+								Hello
+							</text>
+						</g>
+					);
+				})}
 			</svg>
 			{/* <svg width="400" height="400" xmlns="http://www.w3.org/2000/svg">
 				<path

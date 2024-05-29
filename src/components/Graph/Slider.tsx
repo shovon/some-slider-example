@@ -1,5 +1,21 @@
-import { useEffect, useRef } from "react";
+import { memo, useEffect, useRef } from "react";
 import { useResizeObserver } from "../../lib/resize";
+
+export type OnCenterSliceProps = {
+	// This is movement in the x coordinate in pixel space
+	amount: number;
+
+	// This is the width of the segment in pixel space.
+	segmentWidth: number;
+
+	// This is the width of the slider in pixel space.
+	sliderWidth: number;
+};
+
+export type OnRightSlideProps = {
+	amount: number;
+	sliderWidth: number;
+};
 
 type SliderProps = {
 	// A value between 0 to 1 representing how far away from the origin is the
@@ -14,21 +30,11 @@ type SliderProps = {
 	// Ideally, right > left.
 	right: number;
 
-	//
-	onCenterSlide?: (props: {
-		// This is movement in the x coordinate in pixel space
-		amount: number;
-
-		// This is the width of the segment in pixel space.
-		segmentWidth: number;
-
-		// This is the width of the slider in pixel space.
-		sliderWidth: number;
-	}) => void;
-	onRightSlide?: (amount: number) => void;
+	onCenterSlide?: (props: OnCenterSliceProps) => void;
+	onRightSlide?: (amount: OnRightSlideProps) => void;
 };
 
-export function Slider({
+export const Slider = memo(function Slider({
 	panRatio: left,
 	right,
 	onCenterSlide,
@@ -54,7 +60,7 @@ export function Slider({
 			}
 			if (isMouseDownOnRightRef.current) {
 				e.preventDefault();
-				onRightSlide?.(e.movementX);
+				onRightSlide?.({ amount: e.movementX, sliderWidth: divContainerWidth });
 			}
 		};
 		document.addEventListener("mousemove", listener);
@@ -117,4 +123,4 @@ export function Slider({
 			></div>
 		</div>
 	);
-}
+});

@@ -1,10 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useResizeObserver } from "../../lib/resize";
 import { useStateConstraint } from "../../app/useStateConstraint";
 import { useStateProcessor } from "../../app/useStateProcessor";
-import { Slider } from "./Slider";
+import {
+	type OnRightSlideProps,
+	Slider,
+	type OnCenterSliceProps,
+} from "./Slider";
 
 function* map<T, V>(
 	iterable: Iterable<T>,
@@ -122,9 +126,44 @@ export function Graph() {
 	const tickCount =
 		Math.ceil(divContainerWidth / modularZoomSegmentWidth) * 2 + 10;
 
+	const onCenterSlice = useCallback(
+		({ amount, sliderWidth }: OnCenterSliceProps) => {
+			// We know the amount.
+			//
+			// Next grab the entire width of the slider.
+
+			// Get the current pixel position of the segment.
+			const left = (virtualPan / maxVirtualRange) * sliderWidth;
+
+			// This is the new left position in pixel space.
+			const newLeft = left + amount;
+
+			// Next, get the new ratio from left point to sliderWidth.
+			const newRatio = newLeft / sliderWidth;
+
+			const newRealPan = newRatio * maxVirtualRange * Math.E ** virtualZoom;
+
+			setCamera({
+				pan: newRealPan,
+				zoom: realZoom,
+			});
+		},
+		[virtualPan, virtualZoom, realZoom, setCamera]
+	);
+
+	const onRightSlide = useCallback(
+		({ amount }: OnRightSlideProps) => {
+			setCamera({
+				pan: realPan,
+				zoom: realZoom - amount / Math.E ** virtualZoom,
+			});
+		},
+		[realPan, realZoom, virtualZoom, setCamera]
+	);
+
 	return (
 		<div ref={divContainerRef}>
-			{/* <p>
+			<p>
 				Camera zoom: e<sup>{virtualZoom}</sup> = {Math.E ** virtualZoom}
 			</p>
 			<p>Pan: {realPan}</p>
@@ -145,7 +184,7 @@ export function Graph() {
 				virtualPan + divContainerWidth / Math.E ** virtualZoom > maxVirtualRange
 					? "Yes"
 					: "No"}
-			</p> */}
+			</p>
 			<svg
 				ref={(ref) => {
 					ref?.addEventListener(
@@ -226,34 +265,9 @@ export function Graph() {
 				panRatio={virtualPan / maxVirtualRange}
 				right={divContainerWidth / Math.E ** virtualZoom / maxVirtualRange}
 				// TODO: useCallback
-				onCenterSlide={({ amount, segmentWidth, sliderWidth }) => {
-					// We know the amount.
-					//
-					// Next grab the entire width of the slider.
-
-					// Get the current pixel position of the segment.
-					const left = (virtualPan / maxVirtualRange) * sliderWidth;
-
-					// This is the new left position in pixel space.
-					const newLeft = left + amount;
-
-					// Next, get the new ratio from left point to sliderWidth.
-					const newRatio = newLeft / sliderWidth;
-
-					const newRealPan = newRatio * maxVirtualRange * Math.E ** virtualZoom;
-
-					setCamera({
-						pan: newRealPan,
-						zoom: realZoom,
-					});
-				}}
+				onCenterSlide={onCenterSlice}
 				// TODO: useCallback
-				onRightSlide={(amount) => {
-					setCamera({
-						pan: realPan,
-						zoom: realZoom - amount / Math.E ** virtualZoom,
-					});
-				}}
+				onRightSlide={onRightSlide}
 			/>
 		</div>
 	);

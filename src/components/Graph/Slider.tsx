@@ -2,18 +2,34 @@ import { useEffect, useRef } from "react";
 import { useResizeObserver } from "../../lib/resize";
 
 type SliderProps = {
-	left: number;
+	// A value between 0 to 1 representing how far away from the origin is the
+	// left-most slider.
+	//
+	// Ideally left < right.
+	panRatio: number;
+
+	// A value between 0 to 1 representing how far away from the origin is the
+	// right-most part of the slider.
+	//
+	// Ideally, right > left.
 	right: number;
+
+	//
 	onCenterSlide?: (props: {
+		// This is movement in the x coordinate in pixel space
 		amount: number;
-		segmentWidth;
+
+		// This is the width of the segment in pixel space.
+		segmentWidth: number;
+
+		// This is the width of the slider in pixel space.
 		sliderWidth: number;
 	}) => void;
 	onRightSlide?: (amount: number) => void;
 };
 
 export function Slider({
-	left,
+	panRatio: left,
 	right,
 	onCenterSlide,
 	onRightSlide,

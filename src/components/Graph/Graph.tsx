@@ -71,7 +71,8 @@ export function Graph() {
 				zoom: 0,
 			},
 			(value): Camera => {
-				const minZoom = Math.log(divContainerWidth / maxVirtualRange);
+				const minZoom =
+					Math.log(divContainerWidth / maxVirtualRange) - zoomAddend;
 				// virtualPan + divContainerWidth / Math.E ** virtualZoom < maxVirtualRange
 				const maxPan =
 					maxVirtualRange * Math.E ** (value.zoom + zoomAddend) -
@@ -79,7 +80,7 @@ export function Graph() {
 
 				return {
 					pan: Math.max(0, Math.min(maxPan, Math.max(0, value.pan))),
-					zoom: Math.max(minZoom - zoomAddend, value.zoom),
+					zoom: Math.max(minZoom, value.zoom),
 				};
 			}
 		);
@@ -128,6 +129,7 @@ export function Graph() {
 
 	const onCenterSlice = useCallback(
 		({ amount, sliderWidth }: OnCenterSliceProps) => {
+			console.log("Center sliding");
 			// We know the amount.
 			//
 			// Next grab the entire width of the slider.
@@ -152,13 +154,37 @@ export function Graph() {
 	);
 
 	const onRightSlide = useCallback(
-		({ amount }: OnRightSlideProps) => {
+		({ amount, segmentWidth, sliderWidth }: OnRightSlideProps) => {
+			console.log("Right sliding");
+			// The zoom amount in pixels.
+
+			// The "left" translation of the segment, given the pan amount.
+			const left = (virtualPan / maxVirtualRange) * sliderWidth;
+
+			// Step 1. Compute new segment width.
+
+			const newSegmentWidth = Math.min(
+				amount + segmentWidth,
+				sliderWidth - left
+			);
+
+			// Calculate the ratio from the segment width and slider wdith.
+			const ratio = newSegmentWidth / sliderWidth;
+
+			// console.assert(realZoom === realZoom);
+
+			// Get the new zoom
+			const newZoom =
+				Math.log(divContainerWidth / (maxVirtualRange * ratio)) - zoomAddend;
+
+			// console.log(realZoom, newZoom, virtualZoom);
+
 			setCamera({
 				pan: realPan,
-				zoom: realZoom - amount / Math.E ** virtualZoom,
+				zoom: newZoom,
 			});
 		},
-		[realPan, realZoom, virtualZoom, setCamera]
+		[realPan, virtualPan, divContainerWidth, setCamera]
 	);
 
 	return (
@@ -263,7 +289,7 @@ export function Graph() {
 
 			<Slider
 				panRatio={virtualPan / maxVirtualRange}
-				right={divContainerWidth / Math.E ** virtualZoom / maxVirtualRange}
+				zoomRatio={divContainerWidth / Math.E ** virtualZoom / maxVirtualRange}
 				// TODO: useCallback
 				onCenterSlide={onCenterSlice}
 				// TODO: useCallback

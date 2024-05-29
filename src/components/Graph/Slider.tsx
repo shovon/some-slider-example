@@ -14,6 +14,7 @@ export type OnCenterSliceProps = {
 
 export type OnRightSlideProps = {
 	amount: number;
+	segmentWidth: number;
 	sliderWidth: number;
 };
 
@@ -28,15 +29,15 @@ type SliderProps = {
 	// right-most part of the slider.
 	//
 	// Ideally, right > left.
-	right: number;
+	zoomRatio: number;
 
 	onCenterSlide?: (props: OnCenterSliceProps) => void;
 	onRightSlide?: (amount: OnRightSlideProps) => void;
 };
 
 export const Slider = memo(function Slider({
-	panRatio: left,
-	right,
+	panRatio,
+	zoomRatio,
 	onCenterSlide,
 	onRightSlide,
 }: SliderProps) {
@@ -54,20 +55,24 @@ export const Slider = memo(function Slider({
 				e.preventDefault();
 				onCenterSlide?.({
 					amount: e.movementX,
-					segmentWidth: right * divContainerWidth,
+					segmentWidth: zoomRatio * divContainerWidth,
 					sliderWidth: divContainerWidth,
 				});
 			}
 			if (isMouseDownOnRightRef.current) {
 				e.preventDefault();
-				onRightSlide?.({ amount: e.movementX, sliderWidth: divContainerWidth });
+				onRightSlide?.({
+					amount: e.movementX,
+					segmentWidth: zoomRatio * divContainerWidth,
+					sliderWidth: divContainerWidth,
+				});
 			}
 		};
 		document.addEventListener("mousemove", listener);
 		return () => {
 			document.removeEventListener("mousemove", listener);
 		};
-	}, [onCenterSlide, right, divContainerWidth, onRightSlide]);
+	}, [onCenterSlide, zoomRatio, divContainerWidth, onRightSlide]);
 
 	useEffect(() => {
 		const listener = () => {
@@ -95,8 +100,8 @@ export const Slider = memo(function Slider({
 					isMouseDownOnCenterRef.current = false;
 				}}
 				style={{
-					left: left * divContainerWidth,
-					width: right * divContainerWidth,
+					left: panRatio * divContainerWidth,
+					width: zoomRatio * divContainerWidth,
 				}}
 			></div>
 
@@ -104,7 +109,7 @@ export const Slider = memo(function Slider({
 			<div
 				className="cursor-pointer absolute left-0 top-[-2px] h-[16px] w-2 bg-[#1c4756]"
 				style={{
-					left: left * divContainerWidth,
+					left: panRatio * divContainerWidth,
 				}}
 			></div>
 
@@ -112,7 +117,7 @@ export const Slider = memo(function Slider({
 			<div
 				className="cursor-pointer absolute left-0 top-[-2px] h-[16px] w-2 bg-[#1c4756]"
 				style={{
-					left: (left + right) * divContainerWidth,
+					left: (panRatio + zoomRatio) * divContainerWidth,
 				}}
 				onMouseDown={() => {
 					isMouseDownOnRightRef.current = true;

@@ -223,17 +223,27 @@ export function Graph() {
 			</svg>
 
 			<Slider
-				left={virtualPan / maxVirtualRange}
+				panRatio={virtualPan / maxVirtualRange}
 				right={divContainerWidth / Math.E ** virtualZoom / maxVirtualRange}
 				// TODO: useCallback
 				onCenterSlide={({ amount, segmentWidth, sliderWidth }) => {
 					// We know the amount.
 					//
 					// Next grab the entire width of the slider.
-					console.assert(segmentWidth < sliderWidth);
+
+					// Get the current pixel position of the segment.
+					const left = (virtualPan / maxVirtualRange) * sliderWidth;
+
+					// This is the new left position in pixel space.
+					const newLeft = left + amount;
+
+					// Next, get the new ratio from left point to sliderWidth.
+					const newRatio = newLeft / sliderWidth;
+
+					const newRealPan = newRatio * maxVirtualRange * Math.E ** virtualZoom;
 
 					setCamera({
-						pan: realPan + amount,
+						pan: newRealPan,
 						zoom: realZoom,
 					});
 				}}

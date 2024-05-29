@@ -129,7 +129,6 @@ export function Graph() {
 
 	const onCenterSlice = useCallback(
 		({ amount, sliderWidth }: OnCenterSliceProps) => {
-			console.log("Center sliding");
 			// We know the amount.
 			//
 			// Next grab the entire width of the slider.
@@ -155,7 +154,6 @@ export function Graph() {
 
 	const onRightSlide = useCallback(
 		({ amount, segmentWidth, sliderWidth }: OnRightSlideProps) => {
-			console.log("Right sliding");
 			// The zoom amount in pixels.
 
 			// The "left" translation of the segment, given the pan amount.
@@ -180,11 +178,12 @@ export function Graph() {
 			// console.log(realZoom, newZoom, virtualZoom);
 
 			setCamera({
-				pan: realPan,
+				pan:
+					(realPan / Math.E ** virtualZoom) * Math.E ** (newZoom + zoomAddend),
 				zoom: newZoom,
 			});
 		},
-		[realPan, virtualPan, divContainerWidth, setCamera]
+		[realPan, virtualPan, divContainerWidth, setCamera, virtualZoom]
 	);
 
 	return (

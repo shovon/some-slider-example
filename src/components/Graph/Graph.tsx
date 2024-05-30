@@ -190,7 +190,6 @@ export function Graph() {
 
 	const onRightSlide = useCallback(
 		({ amount, segmentWidth, sliderWidth }: OnRightSlideProps) => {
-			console.log(amount);
 			// The zoom amount in pixels.
 
 			// The "left" translation of the segment, given the pan amount.

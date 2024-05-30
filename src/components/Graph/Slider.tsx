@@ -1,7 +1,13 @@
 import { memo, useEffect, useRef } from "react";
 import { useResizeObserver } from "../../lib/resize";
 
-export type OnCenterSliceProps = {
+export type OnLeftSlideProps = {
+	amount: number;
+	segmentWidth: number;
+	sliderWidth: number;
+};
+
+export type OnCenterSlideProps = {
 	// This is movement in the x coordinate in pixel space
 	amount: number;
 
@@ -31,13 +37,15 @@ type SliderProps = {
 	// Ideally, right > left.
 	zoomRatio: number;
 
-	onCenterSlide?: (props: OnCenterSliceProps) => void;
+	onLeftSlide?: (props: OnLeftSlideProps) => void;
+	onCenterSlide?: (props: OnCenterSlideProps) => void;
 	onRightSlide?: (amount: OnRightSlideProps) => void;
 };
 
 export const Slider = memo(function Slider({
 	panRatio,
 	zoomRatio,
+	onLeftSlide,
 	onCenterSlide,
 	onRightSlide,
 }: SliderProps) {
@@ -46,36 +54,41 @@ export const Slider = memo(function Slider({
 		// height: divContainerHeight,
 		ref: divContainerRef,
 	} = useResizeObserver();
+	const isMouseDownOnLeftRef = useRef(false);
 	const isMouseDownOnCenterRef = useRef(false);
 	const isMouseDownOnRightRef = useRef(false);
 
 	useEffect(() => {
 		const listener = (e: MouseEvent) => {
-			if (isMouseDownOnCenterRef.current) {
+			const props = {
+				amount: e.movementX,
+				segmentWidth: zoomRatio * divContainerWidth,
+				sliderWidth: divContainerWidth,
+			};
+			if (isMouseDownOnLeftRef.current) {
+				// console.log("Left");
 				e.preventDefault();
-				onCenterSlide?.({
-					amount: e.movementX,
-					segmentWidth: zoomRatio * divContainerWidth,
-					sliderWidth: divContainerWidth,
-				});
+				onLeftSlide?.(props);
+			}
+			if (isMouseDownOnCenterRef.current) {
+				// console.log("Center");
+				e.preventDefault();
+				onCenterSlide?.(props);
 			}
 			if (isMouseDownOnRightRef.current) {
 				e.preventDefault();
-				onRightSlide?.({
-					amount: e.movementX,
-					segmentWidth: zoomRatio * divContainerWidth,
-					sliderWidth: divContainerWidth,
-				});
+				onRightSlide?.(props);
 			}
 		};
 		document.addEventListener("mousemove", listener);
 		return () => {
 			document.removeEventListener("mousemove", listener);
 		};
-	}, [onCenterSlide, zoomRatio, divContainerWidth, onRightSlide]);
+	}, [onCenterSlide, onLeftSlide, zoomRatio, divContainerWidth, onRightSlide]);
 
 	useEffect(() => {
 		const listener = () => {
+			isMouseDownOnLeftRef.current = false;
 			isMouseDownOnCenterRef.current = false;
 			isMouseDownOnRightRef.current = false;
 		};
@@ -96,9 +109,6 @@ export const Slider = memo(function Slider({
 				onMouseDown={() => {
 					isMouseDownOnCenterRef.current = true;
 				}}
-				onMouseUp={() => {
-					isMouseDownOnCenterRef.current = false;
-				}}
 				style={{
 					left: panRatio * divContainerWidth,
 					width: zoomRatio * divContainerWidth,
@@ -111,6 +121,9 @@ export const Slider = memo(function Slider({
 				style={{
 					left: panRatio * divContainerWidth,
 				}}
+				onMouseDown={() => {
+					isMouseDownOnLeftRef.current = true;
+				}}
 			></div>
 
 			{/* The right knob */}
@@ -121,9 +134,6 @@ export const Slider = memo(function Slider({
 				}}
 				onMouseDown={() => {
 					isMouseDownOnRightRef.current = true;
-				}}
-				onMouseUp={() => {
-					isMouseDownOnRightRef.current = false;
 				}}
 			></div>
 		</div>

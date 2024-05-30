@@ -134,12 +134,9 @@ export function Graph() {
 		sliderWidth,
 	}: OnLeftSlideProps) => {
 		// The zoom amount in pixels.
-		console.log(amount);
 
 		// The "left" translation of the segment, given the pan amount.
 		const left = (virtualPan / maxVirtualRange) * sliderWidth;
-
-		// Step 1. Compute new segment width.
 
 		const newSegmentWidth = Math.max(segmentWidth - amount, 0);
 
@@ -150,16 +147,14 @@ export function Graph() {
 
 		const newLeft = left + amount;
 
-		// Next, get the new ratio from left point to sliderWidth.
-		const newRatio = newLeft / sliderWidth;
-
-		const newRealPan = newRatio * maxVirtualRange * Math.E ** virtualZoom;
-
 		// Get the new zoom
 		const newZoom =
 			Math.log(divContainerWidth / (maxVirtualRange * ratio)) - zoomAddend;
 
-		// console.log(realZoom, newZoom, virtualZoom);
+		// Next, get the new ratio from left point to sliderWidth.
+		const newRatio = newLeft / sliderWidth;
+		const newRealPan =
+			newRatio * maxVirtualRange * Math.E ** (newZoom + zoomAddend);
 
 		setCamera({
 			pan: newRealPan,

@@ -66,17 +66,16 @@ export const Slider = memo(function Slider({
 				sliderWidth: divContainerWidth,
 			};
 			if (isMouseDownOnLeftRef.current) {
-				console.log("Left");
+				// console.log("Left");
 				e.preventDefault();
 				onLeftSlide?.(props);
 			}
 			if (isMouseDownOnCenterRef.current) {
-				console.log("Center");
+				// console.log("Center");
 				e.preventDefault();
 				onCenterSlide?.(props);
 			}
 			if (isMouseDownOnRightRef.current) {
-				console.log("Right");
 				e.preventDefault();
 				onRightSlide?.(props);
 			}

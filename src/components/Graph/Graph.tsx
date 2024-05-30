@@ -5,9 +5,10 @@ import { useResizeObserver } from "../../lib/resize";
 import { useStateConstraint } from "../../app/useStateConstraint";
 import { useStateProcessor } from "../../app/useStateProcessor";
 import {
-	type OnRightSlideProps,
 	Slider,
-	type OnCenterSliceProps,
+	type OnLeftSlideProps,
+	type OnCenterSlideProps,
+	type OnRightSlideProps,
 } from "./Slider";
 
 function* map<T, V>(
@@ -127,8 +128,48 @@ export function Graph() {
 	const tickCount =
 		Math.ceil(divContainerWidth / modularZoomSegmentWidth) * 2 + 10;
 
-	const onCenterSlice = useCallback(
-		({ amount, sliderWidth }: OnCenterSliceProps) => {
+	const onLeftSlide = ({
+		amount,
+		segmentWidth,
+		sliderWidth,
+	}: OnLeftSlideProps) => {
+		// The zoom amount in pixels.
+		console.log(amount);
+
+		// The "left" translation of the segment, given the pan amount.
+		const left = (virtualPan / maxVirtualRange) * sliderWidth;
+
+		// Step 1. Compute new segment width.
+
+		const newSegmentWidth = Math.max(segmentWidth - amount, 0);
+
+		// Calculate the ratio from the segment width and slider wdith.
+		const ratio = newSegmentWidth / sliderWidth;
+
+		// console.assert(realZoom === realZoom);
+
+		const newLeft = left + amount;
+
+		// Next, get the new ratio from left point to sliderWidth.
+		const newRatio = newLeft / sliderWidth;
+
+		const newRealPan = newRatio * maxVirtualRange * Math.E ** virtualZoom;
+
+		// Get the new zoom
+		const newZoom =
+			Math.log(divContainerWidth / (maxVirtualRange * ratio)) - zoomAddend;
+
+		// console.log(realZoom, newZoom, virtualZoom);
+
+		setCamera({
+			pan: newRealPan,
+			// pan: (realPan / Math.E ** virtualZoom) * Math.E ** (newZoom + zoomAddend),
+			zoom: newZoom,
+		});
+	};
+
+	const onCenterSlide = useCallback(
+		({ amount, sliderWidth }: OnCenterSlideProps) => {
 			// We know the amount.
 			//
 			// Next grab the entire width of the slider.
@@ -154,6 +195,7 @@ export function Graph() {
 
 	const onRightSlide = useCallback(
 		({ amount, segmentWidth, sliderWidth }: OnRightSlideProps) => {
+			console.log(amount);
 			// The zoom amount in pixels.
 
 			// The "left" translation of the segment, given the pan amount.
@@ -289,9 +331,8 @@ export function Graph() {
 			<Slider
 				panRatio={virtualPan / maxVirtualRange}
 				zoomRatio={divContainerWidth / Math.E ** virtualZoom / maxVirtualRange}
-				// TODO: useCallback
-				onCenterSlide={onCenterSlice}
-				// TODO: useCallback
+				onLeftSlide={onLeftSlide}
+				onCenterSlide={onCenterSlide}
 				onRightSlide={onRightSlide}
 			/>
 		</div>

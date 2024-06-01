@@ -16,7 +16,12 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en">
-			<body className={inter.className}>{children}</body>
+			<body className={inter.className}>
+				<nav className="bg-[#1c4756] text-white p-4">
+					<strong>ClimateAi</strong>
+				</nav>
+				{children}
+			</body>
 		</html>
 	);
 }

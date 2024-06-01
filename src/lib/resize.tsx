@@ -33,7 +33,7 @@ const ResizeContext = createContext(NaN);
 export function ResizeProvider({
 	children,
 	...props
-}: { children: ReactNode } & React.HTMLAttributes<HTMLDivElement>) {
+}: { children: () => ReactNode } & React.HTMLAttributes<HTMLDivElement>) {
 	const mainRef = useRef<HTMLElement | null>(null);
 	const [width, setWidth] = useState(NaN);
 	const [height, setHeight] = useState(NaN);

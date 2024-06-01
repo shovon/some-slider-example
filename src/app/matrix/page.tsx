@@ -2,27 +2,8 @@
 
 import { useState } from "react";
 import { NDArray, NDIter, array } from "vectorious";
-import { useGesture } from "@use-gesture/react";
 import { useCamera } from "../../lib/mouse-and-camera";
-
-const translation = (x: number, y: number) =>
-	array([
-		[1, 0, x],
-		[0, 1, y],
-		[0, 0, 1],
-	]);
-
-const scaling = (x: number, y: number) =>
-	array([
-		[x, 0, 0],
-		[0, y, 0],
-		[0, 0, 1],
-	]);
-
-type Pipe<T> = {
-	_<V>(fn: (value: T) => V): Pipe<V>;
-	readonly value: T;
-};
+import { scaling, translation } from "../../lib/linear-algebra/homogeneous-2d";
 
 const toString = (arr: NDArray) => {
 	return new NDArray(arr.toArray().slice(0, -1))
@@ -43,16 +24,8 @@ const wrap = (x: number, min: number, max: number): number =>
 const segmentWidth = 100;
 
 export default function Matrix() {
-	// const [cameraPan, setCameraPan] = useState<[number, number]>([0, 0]);
-	// const [zoom, setZoom] = useState(0);
 	const [cursorPosition, setCursorPosition] = useState([0, 0]);
-	// const [camera, setCamera] = useState<{
-	// 	zoom: number;
-	// 	pan: [number, number];
-	// }>({
-	// 	zoom: 0,
-	// 	pan: [0, 0],
-	// });
+
 	const {
 		camera,
 		ref: svgElementRef,
@@ -63,8 +36,6 @@ export default function Matrix() {
 		segmentWidth * Math.E ** wrap(camera.zoom, -0.25, 0.25);
 
 	const tickCount = Math.ceil(640 / modularZoomSegmentWidth) * 2 + 10;
-
-	// console.log(cursorPositionRef.current);
 
 	return (
 		<div className="m-4">
@@ -93,11 +64,6 @@ export default function Matrix() {
 							scaling(Math.E ** camera.zoom, Math.E ** camera.zoom)
 						)
 					)})`}
-					// transform={`matrix(${toString(
-					// 	translation(...camera.pan).multiply(
-					// 		scaling(Math.E ** camera.zoom, Math.E ** camera.zoom)
-					// 	)
-					// )})`}
 				>
 					<circle cx={0} cy={0} r={10} fill="red" />
 				</g>

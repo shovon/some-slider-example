@@ -222,6 +222,59 @@ export function Graph() {
 		[realPan, virtualPan, divContainerWidth, setCamera, virtualZoom]
 	);
 
+	const onMouseMove = useCallback(
+		(e: React.MouseEvent<SVGSVGElement, MouseEvent>) => {
+			const rect = (e.target as Element)?.getBoundingClientRect() ?? {};
+			const rectPos = [rect.left, rect.top] as [number, number];
+			const clientXY = [e.clientX, e.clientY] as [number, number];
+
+			cursorPositionRef.current = sub2(clientXY, rectPos);
+		},
+		[]
+	);
+
+	const svgRef = useRef<SVGSVGElement | null>(null);
+
+	const onWheelListener = useCallback(
+		(e: WheelEvent) => {
+			e.preventDefault();
+			if (e.ctrlKey) {
+				const c1 = realPan;
+				const newZoom = realZoom + -e.deltaY * 0.01;
+
+				const z1 = Math.E ** virtualZoom;
+				const z2 = Math.E ** (newZoom + zoomAddend);
+
+				const m = cursorPositionRef.current[0];
+
+				// setRealPan(();
+				// setRealZoom(newZoom);
+				setCamera({
+					pan: ((m + c1) / z1) * z2 - m,
+					zoom: newZoom,
+				});
+			} else {
+				// setRealPan(realPan + e.deltaX * 0.5);
+				setCamera({
+					pan: realPan + e.deltaX * 0.5,
+					zoom: realZoom,
+				});
+			}
+		},
+		[realPan, realZoom, setCamera, virtualZoom]
+	);
+
+	useEffect(() => {
+		const listener = onWheelListener;
+		const svgElement = svgRef.current;
+		svgElement?.addEventListener("wheel", listener, {
+			passive: false,
+		});
+		return () => {
+			svgElement?.removeEventListener("wheel", listener);
+		};
+	}, [onWheelListener]);
+
 	return (
 		<div ref={divContainerRef}>
 			<p>
@@ -248,43 +301,9 @@ export function Graph() {
 			</p>
 			<svg
 				ref={(ref) => {
-					ref?.addEventListener(
-						"wheel",
-						(e) => {
-							e.preventDefault();
-							if (e.ctrlKey) {
-								const c1 = realPan;
-								const newZoom = realZoom + -e.deltaY * 0.01;
-
-								const z1 = Math.E ** virtualZoom;
-								const z2 = Math.E ** (newZoom + zoomAddend);
-
-								const m = cursorPositionRef.current[0];
-
-								// setRealPan(();
-								// setRealZoom(newZoom);
-								setCamera({
-									pan: ((m + c1) / z1) * z2 - m,
-									zoom: newZoom,
-								});
-							} else {
-								// setRealPan(realPan + e.deltaX * 0.5);
-								setCamera({
-									pan: realPan + e.deltaX * 0.5,
-									zoom: realZoom,
-								});
-							}
-						},
-						{ passive: false }
-					);
+					svgRef.current = ref;
 				}}
-				onMouseMove={(e) => {
-					const rect = (e.target as Element)?.getBoundingClientRect() ?? {};
-					const rectPos = [rect.left, rect.top] as [number, number];
-					const clientXY = [e.clientX, e.clientY] as [number, number];
-
-					cursorPositionRef.current = sub2(clientXY, rectPos);
-				}}
+				onMouseMove={onMouseMove}
 				style={{
 					width: divContainerWidth,
 					height: height,

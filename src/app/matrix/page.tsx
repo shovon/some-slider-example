@@ -1,17 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { NDArray, NDIter, array } from "vectorious";
 import { useCamera } from "../../lib/mouse-and-camera";
 import { scaling, translation } from "../../lib/linear-algebra/homogeneous-2d";
-
-const toString = (arr: NDArray) => {
-	return new NDArray(arr.toArray().slice(0, -1))
-		.transpose()
-		.toArray()
-		.flat()
-		.join(" ");
-};
+import { toString } from "../../lib/svg";
 
 const sub2 = ([x1, y1]: [number, number], [x2, y2]: [number, number]) =>
 	[x1 - x2, y1 - y2] as [number, number];

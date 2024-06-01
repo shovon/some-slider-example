@@ -1,4 +1,4 @@
-import { NDArray, NDIter, array } from "vectorious";
+import { array } from "vectorious";
 
 export const translation = (x: number, y: number) =>
 	array([

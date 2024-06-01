@@ -20,9 +20,17 @@ export default function Home() {
 					<div className="grid grid-cols-3 gap-4">
 						<div>
 							<h2 className="mb-4 text-2xl font-bold">Zoom examples</h2>
-							<p>
+							<p className="mb-4">
 								We have two similar examples, both using Visx, but each using
 								their own strategy for implementing a {'"zoom"'} interaction.
+							</p>
+							<p className="mb-4">
+								The one on the left is using {"Visx&apos;s"} proposed zooming
+								library, and the one on the right uses a custom implementation.
+							</p>
+							<p>
+								Note: I have yet to implement grab and drag, but will implement
+								soon.
 							</p>
 						</div>
 						<div ref={zoomExample1.ref}>
@@ -30,7 +38,7 @@ export default function Home() {
 							<ZoomI width={zoomExample1.width} height={300} />
 						</div>
 						<div ref={zoomExample2.ref}>
-							<h2 className="mb-4 text-2xl font-bold">Visx; no Visx Zoom</h2>
+							<h2 className="mb-4 text-2xl font-bold">Visx with custom zoom</h2>
 							<ZoomDIY width={zoomExample2.width} height={300} />
 						</div>
 					</div>

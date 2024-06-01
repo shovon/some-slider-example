@@ -10,6 +10,9 @@ import genPhyllotaxis, {
 } from "@visx/mock-data/lib/generators/genPhyllotaxis";
 import { scaleLinear } from "@visx/scale";
 import { array } from "vectorious";
+import { useCamera } from "../lib/mouse-and-camera";
+import { toString } from "../lib/svg";
+import { scaling, translation } from "../lib/linear-algebra/homogeneous-2d";
 
 const bg = "#0a0a0a";
 const points = [...new Array(1000)];
@@ -40,6 +43,11 @@ export default function ZoomDIY({ width, height }: ZoomIProps) {
 		height,
 	});
 	const phyllotaxis: PhyllotaxisPoint[] = points.map((d, i) => generator(i));
+	const {
+		camera,
+		ref: svgElementRef,
+		onMouseMove: onMouseMoveOnSVG,
+	} = useCamera<SVGSVGElement>();
 
 	return (
 		<>
@@ -55,6 +63,8 @@ export default function ZoomDIY({ width, height }: ZoomIProps) {
 				{(zoom) => ( */}
 			<div className="relative">
 				<svg
+					ref={svgElementRef}
+					onMouseMove={onMouseMoveOnSVG}
 					width={width}
 					height={height}
 					// style={{
@@ -66,7 +76,11 @@ export default function ZoomDIY({ width, height }: ZoomIProps) {
 					<RectClipPath id="zoom-clip" width={width} height={height} />
 					<rect width={width} height={height} rx={14} fill={bg} />
 					<g
-						transform={`scaleX(${initialTransform.scaleX}) scaleY(${initialTransform.scaleY}) translateX(${initialTransform.translateX} translateY(${initialTransform.translateY}))`}
+						transform={`matrix(${toString(
+							translation(-camera.pan[0], -camera.pan[1]).multiply(
+								scaling(Math.E ** camera.zoom, Math.E ** camera.zoom)
+							)
+						)})`}
 					>
 						{phyllotaxis.map(({ x, y }, i) => (
 							<React.Fragment key={`dot-${i}`}>

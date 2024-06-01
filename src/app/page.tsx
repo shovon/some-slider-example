@@ -25,12 +25,17 @@ export default function Home() {
 								their own strategy for implementing a {'"zoom"'} interaction.
 							</p>
 							<p className="mb-4">
-								The one on the left is using {"Visx&apos;s"} proposed zooming
+								The one on the left is using Visx&apos;s proposed zooming
 								library, and the one on the right uses a custom implementation.
 							</p>
+							<p className="mb-4">
+								Unlike the one on the left, you can pan using the scrolling
+								gesture, and you can zoom using &quot;`pinch in&quot;` and
+								&quot;`pinch out&quot;`.
+							</p>
 							<p>
-								Note: I have yet to implement grab and drag, but will implement
-								soon.
+								Note: for the implementation on the right, I have yet to have
+								implemented grab and drag.
 							</p>
 						</div>
 						<div ref={zoomExample1.ref}>

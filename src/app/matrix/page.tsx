@@ -109,16 +109,16 @@ export default function Matrix() {
 
 								const m = cursorPositionRef.current[0];
 
-								// const newPan = sub2(
-								// 	scalarMul(
-								// 		add2(cursorPositionRef.current, camera.pan),
-								// 		Math.E ** newZoom / Math.E ** camera.zoom
-								// 	),
-								// 	cursorPositionRef.current
-								// );
+								const newPan = sub2(
+									scalarMul(
+										add2(cursorPositionRef.current, camera.pan),
+										Math.E ** newZoom / Math.E ** camera.zoom
+									),
+									cursorPositionRef.current
+								);
 
 								setCamera({
-									pan: [((m + c1) / z1) * z2 - m, camera.pan[1]],
+									pan: newPan,
 									zoom: newZoom,
 								});
 							} else {
@@ -133,11 +133,11 @@ export default function Matrix() {
 					);
 				}}
 				onMouseMove={(e) => {
-					const rect = (e.target as Element)?.getBoundingClientRect() ?? {};
+					const rect = e.currentTarget.getBoundingClientRect() ?? {};
 					const rectPos = [rect.left, rect.top] as [number, number];
 					const clientXY = [e.clientX, e.clientY] as [number, number];
 
-					cursorPositionRef.current = sub2(clientXY, [0, 0]);
+					cursorPositionRef.current = sub2(clientXY, rectPos);
 
 					setCursorPosition(cursorPositionRef.current);
 				}}
@@ -146,14 +146,16 @@ export default function Matrix() {
 				className="border-black border-2"
 			>
 				<g
+					transform={`matrix(${toString(
+						translation(-camera.pan[0], -camera.pan[1]).multiply(
+							scaling(Math.E ** camera.zoom, Math.E ** camera.zoom)
+						)
+					)})`}
 					// transform={`matrix(${toString(
-					// 	translation(-camera.pan[0], -camera.pan[1]).multiply(
+					// 	translation(...camera.pan).multiply(
 					// 		scaling(Math.E ** camera.zoom, Math.E ** camera.zoom)
 					// 	)
 					// )})`}
-					transform={`translate(${-camera.pan[0]}, ${-camera.pan[1]}) scale(${
-						Math.E ** camera.zoom
-					})`}
 				>
 					<circle cx={0} cy={0} r={10} fill="red" />
 				</g>

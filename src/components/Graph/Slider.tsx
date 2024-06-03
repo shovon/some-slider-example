@@ -100,7 +100,9 @@ export const Slider = memo(function Slider({
 
 	return (
 		<div
-			ref={divContainerRef}
+			ref={(ref) => {
+				divContainerRef.current = ref;
+			}}
 			className="w-full h-[12px] bg-neutral-400 mt-4 relative"
 		>
 			{/* The white background indicating selection range */}

@@ -1,7 +1,7 @@
 import { ReactNode, createContext, useEffect, useRef, useState } from "react";
 
 export function useResizeObserver() {
-	const ref = useRef(null);
+	const ref = useRef<HTMLElement | null>(null);
 	const [width, setWidth] = useState(NaN);
 	const [height, setHeight] = useState(NaN);
 

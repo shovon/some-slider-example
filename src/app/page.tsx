@@ -38,11 +38,19 @@ export default function Home() {
 								implemented grab and drag.
 							</p>
 						</div>
-						<div ref={zoomExample1.ref}>
+						<div
+							ref={(ref) => {
+								zoomExample1.ref.current = ref;
+							}}
+						>
 							<h2 className="mb-4 text-2xl font-bold">Visx with Visx Zoom</h2>
 							<ZoomI width={zoomExample1.width} height={300} />
 						</div>
-						<div ref={zoomExample2.ref}>
+						<div
+							ref={(ref) => {
+								zoomExample2.ref.current = ref;
+							}}
+						>
 							<h2 className="mb-4 text-2xl font-bold">Visx with custom zoom</h2>
 							<ZoomDIY width={zoomExample2.width} height={300} />
 						</div>

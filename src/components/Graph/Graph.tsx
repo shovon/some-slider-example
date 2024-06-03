@@ -276,7 +276,11 @@ export function Graph() {
 	}, [onWheelListener]);
 
 	return (
-		<div ref={divContainerRef}>
+		<div
+			ref={(ref) => {
+				divContainerRef.current = ref;
+			}}
+		>
 			<p>
 				Camera zoom: e<sup>{virtualZoom}</sup> = {Math.E ** virtualZoom}
 			</p>

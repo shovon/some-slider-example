@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Head from "next/head";
+import { Toaster } from "react-hot-toast";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,19 +25,22 @@ export default function RootLayout({
 					rel="stylesheet"
 				/>
 			</head>
-			<body className={`${inter.className} h-full`}>
-				<nav className="bg-[#1c4756] text-white p-4">
-					<a className="inline-block mr-4" href="/">
-						<strong>ClimateAi</strong>
-					</a>
+			<body className={`${inter.className} min-h-[100vh]`}>
+				<div className="flex flex-col min-h-[100vh]">
+					<nav className="bg-[#1c4756] text-white p-4">
+						<a className="inline-block mr-4" href="/">
+							<strong>ClimateAi</strong>
+						</a>
 
-					<ul className="inline-block">
-						<li>
-							<a href="/map">Map</a>
-						</li>
-					</ul>
-				</nav>
-				{children}
+						<ul className="inline-block">
+							<li>
+								<a href="/map">Map</a>
+							</li>
+						</ul>
+					</nav>
+					<div className="flex-1">{children}</div>
+				</div>
+				<Toaster />
 			</body>
 		</html>
 	);

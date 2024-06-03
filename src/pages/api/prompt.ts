@@ -42,14 +42,20 @@ async function getLocationInfo(query: string) {
 	const responseText = completion.choices[0].message.content ?? "";
 
 	try {
-		let locationInfo = validate(
-			schema,
-			JSON.parse(responseText.split("\n").slice(1, -1).join(""))
-		);
+		let locationInfo = validate(schema, JSON.parse(responseText));
 		return locationInfo;
 	} catch (e) {
-		console.log(responseText);
-		throw e;
+		try {
+			let locationInfo = validate(
+				schema,
+				JSON.parse(responseText.split("\n").slice(1, -1).join(""))
+			);
+			return locationInfo;
+		} catch (e) {
+			console.error(e);
+			console.log(responseText);
+			throw e;
+		}
 	}
 }
 
